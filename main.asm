@@ -5,19 +5,29 @@ include macros.asm
 .stack 100h
 ;-----Data segment-----
 .data
-header   db "UNIVERSIDAD DE SAN CARLOS DE GUATEMALA",10,13,"FACULTAD DE INGENIERIA",10,13,"CIENCIAS Y SISTEMAS",10,13,"ARQUITECTURA DE COMPUTADORAS Y ENSAMBLADORES 1",10,13,"NOMBRE: RAUL XILOJ",10,13,"CARNET: 201612113",10,13,"SECCION: A",10,10,13,'$'
-options  db "1) Iniciar juego",10,13,"2) Cargar juego",10,13,"3) Salir",10,13,"Ingrese una opcion: ",'$'
-table    db 64 dup('$'),'$'
-row      db "  ",'$' 
-columns  db "  A   B   C   D   E   F   G   H",10,10,13,'$'
-newLine  db 10,'$'
-dash     db "---",'$' 
-wall     db "  |   |   |   |   |   |   |   |",10,13,'$'
-white    db "W",'$'
-black    db "B",'$'
-space    db " ",'$'
-error    db 10,10,13,"Error: caracter invalido",10,10,13,'$'
-load     db "loading game",'$'
+header    db "UNIVERSIDAD DE SAN CARLOS DE GUATEMALA",10,13,"FACULTAD DE INGENIERIA",10,13,"CIENCIAS Y SISTEMAS",10,13,"ARQUITECTURA DE COMPUTADORAS Y ENSAMBLADORES 1",10,13,"NOMBRE: RAUL XILOJ",10,13,"CARNET: 201612113",10,13,"SECCION: A",10,10,13,'$'
+options   db "1) Iniciar juego",10,13,"2) Cargar juego",10,13,"3) Salir",10,13,"Ingrese una opcion: ",'$'
+table     db 64 dup('$')
+row       db "  ",'$' 
+columns   db "  A   B   C   D   E   F   G   H",10,10,13,'$'
+newLine   db 10,'$'
+dash      db "---",'$' 
+wall      db "  |   |   |   |   |   |   |   |",10,13,'$'
+white     db "W",'$'
+black     db "B",'$'
+space     db " ",'$'
+turn1     db "Turno negras: ",'$'
+turn2     db "Turno blancas: ",'$'
+file      db 50 dup('$')
+inst      db 10 dup('$')
+inputFile db 10,13,"Ingrese la ruta del archivo ",10,13,"(Ejemplo: c:\entrada.arq)",10,10,13,'$'
+error     db 10,10,13,"Error: caracter invalido",10,10,13,'$'
+error2    db 10,10,13,"Error: comando no reconocido",10,10,13,'$'
+error3    db 10,10,13,"Error al abrir archivo",10,10,13,'$'
+error4    db 10,10,13,"Error al cerrar archivo",10,10,13,'$'
+error5    db 10,10,13,"Error al escribir en el archivo",10,10,13,'$'
+error6    db 10,10,13,"Error al crear en el archivo",10,10,13,'$'
+load      db "loading game",'$'
 
 ;-----Code segment-----
 .code
@@ -40,9 +50,21 @@ main proc
                 print newLine
                 print newLine
                 showTable table
+                jmp turns
+        turns:
+                print turn1 
+                getTexto inst
+                ;print inst
+                ;print newLine
+                analizeInst inst
+                ;print turn2 
+                ;getCoor 
                 jmp menuPrincipal
         loadGame:
-                print load
+                jmp openFile
+        openFile:
+                print newLine
+                print inputFile
                 jmp menuPrincipal
         invalidChar:
                 print error
@@ -110,9 +132,17 @@ printRowNum proc
 ret
 printRowNum endp
 
-printLetters proc
-        print columns
+getLength proc
+
+mov si,0
+        mientras:
+        cmp inst[si],24h
+        je finmientras
+        inc si
+        jmp mientras
+        finmientras:
 ret
-printLetters endp
+getLength endp
+
 
 end main
