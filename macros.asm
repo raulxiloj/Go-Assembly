@@ -62,10 +62,124 @@ LOCAL while
         jmp while
     finwhile:
         print newLine
-        call printLetters
+        print columns
         
 endm
 
-updateTable macro arreglo
+getTexto macro inst
+    mov si,0    ;xor si,si
+
+    getCadena:
+        getChar
+        cmp al,0dh
+        je finCadena
+        mov inst[si],al
+        inc si
+        jmp getCadena
+    finCadena:
+    mov al,24h
+    mov inst[si],al
+
 endm
 
+analizeInst macro inst
+    mov si, 0
+    call getLength 
+    cmp si,2
+    ;---movement---
+    je movement
+    cmp si,4
+    je specialCommand
+    jmp invalidCommand
+    specialCommand:     ;mini analizador
+        int 3
+        mov si, 0
+        cmp inst[si],80 ;Pass
+        je pass1
+        cmp inst[si],83 ;Save
+        je saveShow
+        cmp inst[si],69 ;Exit
+        je exit1
+        jmp invalidCommand
+    pass1: ;pAss
+        inc si
+        cmp inst[si],65
+        je pass2
+        jmp invalidCommand
+    pass2: ;paSs
+        inc si 
+        cmp inst[si],83
+        je pass3
+        jmp invalidCommand
+    pass3: ;pasS
+        inc si 
+        cmp inst[si],83
+        je finishPass 
+        jmp invalidCommand
+    saveShow: ;Check if is save or show
+        inc si 
+        cmp inst[si],65
+        je save2
+        cmp inst[si],72
+        je show2
+        jmp invalidCommand
+    save2: ;saVe
+        inc si
+        cmp inst[si],86
+        je save3
+        jmp invalidCommand
+    save3: ;savE
+        inc si
+        cmp inst[si],69
+        je finishSave
+        jmp invalidCommand
+    exit1: ;eXit
+        inc si
+        cmp inst[si],88
+        je exit2
+        jmp invalidCommand
+    exit2: ;exIt
+        inc si
+        cmp inst[si],73
+        je exit3
+        jmp invalidCommand
+    exit3: ;exiT
+        inc si
+        cmp inst[si],84
+        je finishExit
+        jmp invalidCommand
+    show2: ;shOw
+        inc si
+        cmp inst[si],79
+        je show3
+        jmp invalidCommand
+    show3: ;shoW
+        inc si
+        cmp inst[si],87
+        je finishShow
+        jmp invalidCommand
+    finishPass:
+        print inst
+        ;CHANGE TURN
+        jmp fin
+    finishSave:
+        print inst
+        ;SAVE BOARD
+        jmp fin
+    finishExit:
+        print inst
+        ;back to the
+        jmp fin
+    finishShow:
+        print inst
+        ;Create html
+        jmp fin
+    invalidCommand:
+        print error2
+        jmp fin
+    movement: 
+        print load
+    fin:
+        print newLine
+    
+endm
