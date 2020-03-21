@@ -59,3 +59,14 @@ writeFile macro handler,array,numBytes
     int 21h
     jc errorWriting
 endm
+
+;macro para seguir escribiendo en una de terminada posicion del fichero 
+seekEnd macro handler
+    mov ah,42h
+    mov al, 02h
+    mov bx, handler
+    mov cx, 0
+    mov dx, 0
+    int 21h
+    jc errorAppending
+endm
