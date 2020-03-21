@@ -1,5 +1,6 @@
 include macros.asm 
-
+include files.asm
+include reports.asm
 .model small
 ;-----Stack segment-----
 .stack 100h
@@ -18,18 +19,40 @@ black     db "B",'$'
 space     db " ",'$'
 turn1     db "Turno negras: ",'$'
 turn2     db "Turno blancas: ",'$'
-file      db 50 dup('$')
 inst      db 10 dup('$')
+coor      db 2 dup('$'),'$'
+;---------------------File messages and variables---------------------
+file      db 50 dup('$')
+fileData  db 64 dup('$')
 inputFile db 10,13,"Ingrese la ruta del archivo ",10,13,"(Ejemplo: c:\entrada.arq)",10,10,13,'$'
+reading   db "Leyendo el archivo...",10,13,'$'
+handler   dw ?
+saved     db "Juego guardado con exito",10,13,'$'
+;----------------------------HTML tags--------------------------------
+report    db "c:\Actual.html",0
+doctype   db "<!DOCTYPE html>",10
+htmlInit  db "<html lang=en>",10
+headInit  db "<head>",10
+titleTag  db "      <title> Reporte </title>",10
+headEnd   db "</head>",10
+bodyInit  db "<body>",10
+bodyEnd   db "</body>",10
+htmlEnd   db "</html>"
+;--------------------------Possibles errors:--------------------------
 error     db 10,10,13,"Error: caracter invalido",10,10,13,'$'
 error2    db 10,10,13,"Error: comando no reconocido",10,10,13,'$'
 error3    db 10,10,13,"Error al abrir archivo",10,10,13,'$'
 error4    db 10,10,13,"Error al cerrar archivo",10,10,13,'$'
 error5    db 10,10,13,"Error al escribir en el archivo",10,10,13,'$'
-error6    db 10,10,13,"Error al crear en el archivo",10,10,13,'$'
-load      db "loading game",'$'
-
-;-----Code segment-----
+error6    db 10,10,13,"Error al crear el archivo",10,10,13,'$'
+error7    db 10,10,13,"Error al leer el archivo",10,10,13,'$'
+error8    db 10,10,13,"Error: letra no valida",10,10,13,'$'
+error9    db 10,10,13,"Error: numero no valido",10,10,13,'$'
+error10   db 10,10,13,"Error: moviendo el puntero del fichero",10,10,13,'$'
+prueba    db "Esto es una prueba gg",'$'
+;----------------------------------------------------------------------------------------------
+;-----------------------------------------Code segment-----------------------------------------
+;----------------------------------------------------------------------------------------------
 .code
 main proc
         mov ax, @data
@@ -45,7 +68,6 @@ main proc
                 cmp al, 33h
                 je finishGame
                 jmp invalidChar
-
         startGame:
                 print newLine
                 print newLine
@@ -61,13 +83,45 @@ main proc
                 ;getCoor 
                 jmp menuPrincipal
         loadGame:
-                jmp openFile
-        openFile:
                 print newLine
                 print inputFile
+                getRuta file
+                openFile file,handler
+                readFile handler,fileData,SIZEOF fileData
+                cleanBuffer file,SIZEOF file,24h
+                ;TO DO:charge data to the table then clean
+                closeFile handler
+                print reading
+                print fileData
+                print newLine
+                cleanBuffer fileData,SIZEOF fileData,24h
                 jmp menuPrincipal
         invalidChar:
                 print error
+                jmp menuPrincipal
+        errorOpening:
+                print error3
+                jmp menuPrincipal
+        errorReading:
+                print error7
+                jmp menuPrincipal
+        errorClosing:
+                print error4
+                jmp menuPrincipal
+        errorCreating:
+                print error6
+                jmp menuPrincipal
+        errorWriting:
+                print error5
+                jmp menuPrincipal
+        errorLetter:
+                print error8
+                jmp menuPrincipal
+        errorNumber:
+                print error9
+                jmp menuPrincipal
+        errorAppending:
+                print error10
                 jmp menuPrincipal
         finishGame:
                 mov ah, 4ch
@@ -133,7 +187,6 @@ ret
 printRowNum endp
 
 getLength proc
-
 mov si,0
         mientras:
         cmp inst[si],24h
