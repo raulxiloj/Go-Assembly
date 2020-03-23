@@ -603,3 +603,9 @@ LOCAL player1,player2,fin
         jmp fin
     fin:
 endm
+
+;macro para obtener la fecha
+getTime macro
+    lea bx, time
+    call get_time
+endm
