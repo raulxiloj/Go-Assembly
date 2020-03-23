@@ -1,6 +1,5 @@
 include macros.asm 
 include files.asm
-include date.asm
 include reports.asm
 .model small
 ;-----Stack segment-----
@@ -69,9 +68,11 @@ error9    db 10,13,"Error: numero no valido",10,10,13,'$'
 error10   db 10,10,13,"Error: moviendo el puntero del fichero",10,10,13,'$'
 error11   db 10,13,"Error: Posicion ya ocupada",10,10,13,'$'
 prueba    db "Esto es una prueba gg",'$'
-temp1     db "Tiene 0 libertades", '$'
-temp2     db "Tiene 1 libertad", '$'
-temp3     db "Tiene 2 libertades",'$'
+temp0     db "Tiene 0 libertades",10,13,'$'
+temp1     db "Tiene 1 libertad",10,13,'$'
+temp2     db "Tiene 2 libertades",10,13,'$'
+temp3     db "Tiene 3 libertades",10,13,'$'
+temp4     db "Tiene 4 libertades",10,13,'$'
 ;----------------------------------------------------------------------------------------------
 ;-----------------------------------------Code segment-----------------------------------------
 ;----------------------------------------------------------------------------------------------

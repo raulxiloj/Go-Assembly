@@ -465,13 +465,15 @@ endm
 
 ;macro para verificar si la piedra a colocar tiene libertades
 hasLiberty macro
-LOCAL finjeje, cero, uno, dos
+LOCAL fin
     mov cx, 0ah 
     isCorner
-    ;cmp cx, 0ah
-    ;jne finjeje
-    ;isSide
-    finjeje:
+    cmp cx, 0ah
+    jne fin
+    isSide
+    cmp cx, 0ah
+    jne fin
+    fin:
 endm
 
 ;macro para verificar si una posicion es una esquina
@@ -554,22 +556,90 @@ LOCAL topLeft, topRight, bottomLeft, bottomRight, fin, countLOne, countLTwo,coun
     fin:
 endm
 
+isSide macro 
+LOCAL checkSide,fin,l1,l2,l3
+    mov bx,0h
+    getBx
+    getSI
+    add bx,si
+    ;leftSide
+    cmp bx,8h
+    je checkSide
+    cmp bx,10h
+    je checkSide
+    cmp bx,18h
+    je checkSide
+    cmp bx,20h
+    je checkSide
+    cmp bx,28h
+    je checkSide
+    cmp bx,30h
+    je checkSide
+    ;right side
+    cmp bx,0Fh
+    je checkSide
+    cmp bx,17h
+    je checkSide
+    cmp bx,1Fh
+    je checkSide
+    cmp bx,27h
+    je checkSide
+    cmp bx,2Fh
+    je checkSide
+    cmp bx,37h
+    je checkSide
+    jmp fin
+
+    checkSide:
+        mov cx,0
+        cmp table[bx+1],24h
+        je l1
+        cmp table[bx-8],24h
+        je l2
+        cmp table[bx+8],24h
+        je l3
+        jmp fin
+        l1:
+            call addOneCX
+            cmp table[bx-8],24h
+            je l2
+            cmp table[bx+8],24h
+            je l3
+        l2: 
+            call addOneCX
+            cmp table[bx+8],24h
+            je l3
+            jmp fin
+        l3: 
+            call addOneCX
+            jmp fin 
+    fin:
+endm
+
 countCX macro
-LOCAL cero,uno,dos,fin
+LOCAL cero,uno,dos,tres,cuatro,fin
     cmp cx, 0h
     je cero
     cmp cx, 1h
     je uno
-    cmp cx,2h
+    cmp cx, 2h
     je dos
+    cmp cx, 3h
+    je tres
     cero: 
-        print temp1
+        print temp0
         jmp fin
     uno:
-        print temp2
+        print temp1
         jmp fin
     dos:
+        print temp2
+        jmp fin
+    tres:
         print temp3
+        jmp fin
+    cuatro:
+        print temp4
     fin:
 endm
 
