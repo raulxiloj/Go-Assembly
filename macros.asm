@@ -1,3 +1,7 @@
+;--------------------------------------------------------------
+;-----------------------macros generales-----------------------
+;--------------------------------------------------------------
+
 print macro cadena
     mov ah, 09h
     mov dx, offset cadena
@@ -9,6 +13,8 @@ getChar macro
     int 21h
 endm
 
+;Macro para obtener texto del usuario
+;param array = variable en donde se almacerana el texto 
 getTexto macro array
 LOCAL getCadena, finCadena
     mov si,0    ;xor si,si
@@ -23,9 +29,12 @@ LOCAL getCadena, finCadena
     finCadena:
     mov al,24h
     mov array[si],al
-    
 endm
 
+;Macro para limpiar un array 
+;param buffer = array de bytes
+;param numBytes = numero de bytes a limpiar
+;para caracter = caracter con el que se va a limpiar 
 cleanBuffer macro buffer,numBytes,caracter
 LOCAL repeat 
     mov si,0
@@ -41,26 +50,26 @@ endm
 ;table = arreglo, los demas parametros son solo 'strings'
 ;0 = Black | 1 = White | '$' = space
 showTable macro table
-LOCAL while    
+LOCAL while,printBlack,printWhite,printSpace,printDash,finwhile,printLine   
     mov si, 0       ;xor si,si
     mov cx, 0       ;counter for dashes
     mov bx, 0       ;counter for line-walls
 
     while:
         call printRowNum
-        cmp table[si],48    ;table[si] == 0
-        je printBlack       ;yes -> printBlack
-        cmp table[si],49     ;table[si] == 1
-        je printWhite       ;yes -> printWhite   
-        jmp printSpace      ;else -> printSpace
+        cmp table[si],48    
+        je printBlack       
+        cmp table[si],49     
+        je printWhite          
+        jmp printSpace      
     printBlack:
         print black         
-        cmp cx, 7h          ;cx == 8
-        jne printDash       ;no -> printDash 
-        inc si              ;yes: si++
-        cmp bx, 7h          ;bx == 8 
-        jne printLine       ;no -> printLine
-        jmp finwhile        ;yes -> fin
+        cmp cx, 7h          
+        jne printDash       
+        inc si              
+        cmp bx, 7h          
+        jne printLine       
+        jmp finwhile        
     printWhite:
         print white
         cmp cx, 7h 
@@ -90,10 +99,11 @@ LOCAL while
         jmp while
     finwhile:
         print newLine
-        print columns
-        
+        print columns   
 endm
 
+;macro para obtener la ruta dada por un usuario
+;similar al de getTexto, la unica diferencia es el fin de cadena
 getRuta macro array
 LOCAL getCadena, finCadena
     mov si,0    ;xor si,si
@@ -108,11 +118,11 @@ LOCAL getCadena, finCadena
     finCadena:
     mov al,00h
     mov array[si],al
-
 endm
 
 ;Analizador para las comandos especiales
 analizeInst macro inst
+LOCAL movement,specialCommand,pass1,pass2,pass3,saveShow,save2,save3,exit1,exit2,exit3,show2,show3,finishPass,finishSave,finishShow,finishExit,fin
     mov si, 0
     call getLength 
     cmp si,2
@@ -189,8 +199,8 @@ analizeInst macro inst
         je finishShow
         jmp invalidCommand
     finishPass:
-        print inst
         ;CHANGE TURN
+        changeTurn
         jmp fin
     finishSave:
         ;SAVE BOARD
@@ -201,29 +211,29 @@ analizeInst macro inst
         closeFile handler
         jmp fin
     finishExit:
-        print inst
-        ;back to the
-        jmp fin
+        cleanBuffer table,SIZEOF table,24h
+        jmp menuPrincipal
     finishShow:
-        ;html
+        ;create html
         createActualReport
-        jmp fin
-    invalidCommand:
-        print error2
         jmp fin
     movement: 
         checkMove inst
+        updateTable 
+        hasLiberty
+        countCX
     fin:
         print newLine
-    
 endm
 
+;macro para verificar si el movimiento del jugador
+;esta en los rangos establecidos y si la posicion esta libre
 checkMove macro inst
     checkLetter inst[0]
     checkNum inst[1]
     getCoorX inst[0]
-    getCoorY inst[1]   
-    updateTable
+    getCoorY inst[1] 
+    isEmpty 
 endm
 
 checkLetter macro char 
@@ -238,7 +248,7 @@ endm
 
 checkNum macro char
 LOCAL continue    
-    cmp char, 2Fh
+    cmp char, 30h
     jg continue
     jmp errorNumber
     continue:
@@ -288,8 +298,7 @@ LOCAL caseA,caseB,caseC,caseD,caseE,caseF,caseG,caseH,fin
     caseH: 
         mov coor[1],55
         jmp fin
-    fin:
-        
+    fin:     
 endm
 
 getCoorY macro char
@@ -334,17 +343,36 @@ LOCAL case0,case1,case2,case3,case4,case5,case6,case7,fin
     case7: 
         mov coor[0],55
         jmp fin
-    fin:
-        
+    fin: 
 endm
 
-updateTable macro
-    int 3
+;macro para verificar si una posicion esta vacia 
+isEmpty macro
     mov bx,0h
     getBx
     getSI
     add bx, si
-    mov table[bx], 49
+    cmp table[bx],24h
+    jne errorPosition
+endm
+
+;macro para agregar movimiento en el tablero
+updateTable macro 
+LOCAL player1,player2,fin
+    mov bx,0h
+    getBx
+    getSI
+    add bx, si
+    cmp player[0], 48
+    je player1
+    jmp player2
+    player1:
+        mov table[bx], 48
+        jmp fin
+    player2:
+        mov table[bx], 49
+    fin:
+        changeTurn
 endm
 
 getBx macro
@@ -432,5 +460,146 @@ LOCAL case0,case1,case2,case3,case4,case5,case6,case7,fin
         jmp fin
     case7: 
         mov si,7h
+    fin:
+endm
+
+;macro para verificar si la piedra a colocar tiene libertades
+hasLiberty macro
+LOCAL finjeje, cero, uno, dos
+    mov cx, 0ah 
+    isCorner
+    ;cmp cx, 0ah
+    ;jne finjeje
+    ;isSide
+    finjeje:
+endm
+
+;macro para verificar si una posicion es una esquina
+isCorner macro
+LOCAL topLeft, topRight, bottomLeft, bottomRight, fin, countLOne, countLTwo,countROne,countRTwo,countBLone,countBLtwo,countBRone,countBRtwo
+    mov bx,0h
+    getBx
+    getSI
+    add bx, si
+    cmp bx, 0h
+    je topLeft
+    cmp bx, 7h
+    je topRight
+    cmp bx, 38h
+    je bottomLeft 
+    cmp bx, 3Fh
+    je bottomRight
+    jmp fin
+
+    topLeft:
+        mov cx,0
+        cmp table[1h],24h
+        je countLOne
+        cmp table[8h],24h
+        je countLTwo
+        jmp fin
+        countLOne:
+            call addOneCX
+            cmp table[8h],24h
+            je countLTwo
+            jmp fin
+        countLTwo:
+            call addOneCX
+            jmp fin
+    topRight:
+        mov cx,0
+        cmp table[6h],24h
+        je countROne
+        cmp table[0Fh],24h
+        je countRTwo
+        jmp fin
+        countROne:
+            call addOneCX
+            cmp table[0Fh],24h
+            je countRTwo
+            jmp fin
+        countRTwo:
+            call addOneCX
+            jmp fin
+    bottomLeft:
+        mov cx,0
+        cmp table[30h],24h
+        je countROne
+        cmp table[39h],24h
+        je countRTwo
+        jmp fin
+        countBLone:
+            call addOneCX
+            cmp table[39h],24h
+            je countLTwo
+            jmp fin
+        countBLtwo:
+            call addOneCX
+            jmp fin
+    bottomRight:
+        mov cx,0
+        cmp table[37h],24h
+        je countROne
+        cmp table[3Eh],24h
+        je countRTwo
+        jmp fin
+        countBRone:
+            call addOneCX
+            cmp table[3Eh],24h
+            je countRTwo
+            jmp fin
+        countBRtwo:
+            call addOneCX
+            jmp fin
+    fin:
+endm
+
+countCX macro
+LOCAL cero,uno,dos,fin
+    cmp cx, 0h
+    je cero
+    cmp cx, 1h
+    je uno
+    cmp cx,2h
+    je dos
+    cero: 
+        print temp1
+        jmp fin
+    uno:
+        print temp2
+        jmp fin
+    dos:
+        print temp3
+    fin:
+endm
+
+;isCaptured
+
+;macro para verificar si el movimiento seria suicido
+suicide macro
+
+endm
+
+;Check if one token is captured
+;captureOne macro
+    ;isCorner 
+    ;isSide
+    ;isInside
+;endm
+
+;ko
+
+
+changeTurn macro
+LOCAL player1,player2,fin
+    cmp player[0],48
+    je player1
+    jmp player2
+    player1:
+        mov player, 49
+        jmp fin
+    player2: 
+        mov player, 48
+        jmp fin
     fin:
 endm
