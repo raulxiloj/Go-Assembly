@@ -219,9 +219,8 @@ LOCAL movement,specialCommand,pass1,pass2,pass3,saveShow,save2,save3,exit1,exit2
         jmp fin
     movement: 
         checkMove inst
+        captureOne
         updateTable 
-        hasLiberty
-        countCX
     fin:
         print newLine
 endm
@@ -231,8 +230,9 @@ endm
 checkMove macro inst
     checkLetter inst[0]
     checkNum inst[1]
-    getCoorX inst[0]
-    getCoorY inst[1] 
+    getCoorY inst[0]
+    getCoorX inst[1] 
+    checkSuicide
     isEmpty 
 endm
 
@@ -257,6 +257,51 @@ LOCAL continue
 endm
 
 getCoorX macro char
+LOCAL case0,case1,case2,case3,case4,case5,case6,case7,fin
+    cmp char,49
+    je case7
+    cmp char,50
+    je case6
+    cmp char,51
+    je case5
+    cmp char,52
+    je case4
+    cmp char,53
+    je case3
+    cmp char,54
+    je case2
+    cmp char,55
+    je case1
+    cmp char,56
+    je case0
+    case0: 
+        mov coor[0],48
+        jmp fin
+    case1: 
+        mov coor[0],49
+        jmp fin
+    case2: 
+        mov coor[0],50
+        jmp fin
+    case3: 
+        mov coor[0],51
+        jmp fin
+    case4: 
+        mov coor[0],52
+        jmp fin
+    case5: 
+        mov coor[0],53
+        jmp fin
+    case6: 
+        mov coor[0],54
+        jmp fin
+    case7: 
+        mov coor[0],55
+        jmp fin
+    fin: 
+endm
+
+getCoorY macro char
 LOCAL caseA,caseB,caseC,caseD,caseE,caseF,caseG,caseH,fin
     cmp char,'A'
     je caseA
@@ -299,51 +344,6 @@ LOCAL caseA,caseB,caseC,caseD,caseE,caseF,caseG,caseH,fin
         mov coor[1],55
         jmp fin
     fin:     
-endm
-
-getCoorY macro char
-LOCAL case0,case1,case2,case3,case4,case5,case6,case7,fin
-    cmp char,49
-    je case0
-    cmp char,50
-    je case1
-    cmp char,51
-    je case2
-    cmp char,52
-    je case3
-    cmp char,53
-    je case4
-    cmp char,54
-    je case5
-    cmp char,55
-    je case6
-    cmp char,56
-    je case7
-    case0: 
-        mov coor[0],48
-        jmp fin
-    case1: 
-        mov coor[0],49
-        jmp fin
-    case2: 
-        mov coor[0],50
-        jmp fin
-    case3: 
-        mov coor[0],51
-        jmp fin
-    case4: 
-        mov coor[0],52
-        jmp fin
-    case5: 
-        mov coor[0],53
-        jmp fin
-    case6: 
-        mov coor[0],54
-        jmp fin
-    case7: 
-        mov coor[0],55
-        jmp fin
-    fin: 
 endm
 
 ;macro para verificar si una posicion esta vacia 
@@ -473,10 +473,11 @@ LOCAL fin
     isSide
     cmp cx, 0ah
     jne fin
+    isInside
     fin:
 endm
 
-;macro para verificar si una posicion es una esquina
+;macro para verificar si una posicion es una esquina y contas sus libertades
 isCorner macro
 LOCAL topLeft, topRight, bottomLeft, bottomRight, fin, countLOne, countLTwo,countROne,countRTwo,countBLone,countBLtwo,countBRone,countBRtwo
     mov bx,0h
@@ -556,6 +557,7 @@ LOCAL topLeft, topRight, bottomLeft, bottomRight, fin, countLOne, countLTwo,coun
     fin:
 endm
 
+;macro para verificar si una posicion es un lado y contar sus libertades
 isSide macro 
 LOCAL checkSide,fin,l1,l2,l3
     mov bx,0h
@@ -612,7 +614,49 @@ LOCAL checkSide,fin,l1,l2,l3
             jmp fin
         l3: 
             call addOneCX
-            jmp fin 
+    fin:
+endm
+
+;macro para contar las libertades de una posicion del centro
+isInside macro
+LOCAL c1,c2,c3,c4,fin    
+    mov cx,0
+    mov bx,0
+    getBx
+    getSI
+    add bx,si
+    cmp table[bx-1],24h
+    je c1
+    cmp table[bx+1],24h
+    je c2
+    cmp table[bx-8],24h
+    je c3
+    cmp table[bx+8],24h
+    je c4
+    jmp fin
+    c1:
+        call addOneCX
+        cmp table[bx+1],24h
+        je c2
+        cmp table[bx-8],24h
+        je c3
+        cmp table[bx+8],24h
+        je c4
+        jmp fin
+    c2: 
+        call addOneCX
+        cmp table[bx-8],24h
+        je c3
+        cmp table[bx+8],24h
+        je c4
+        jmp fin
+    c3:
+        call addOneCX
+        cmp table[bx+8],24h
+        je c4
+        jmp fin
+    c4:
+        call addOneCX
     fin:
 endm
 
@@ -626,6 +670,8 @@ LOCAL cero,uno,dos,tres,cuatro,fin
     je dos
     cmp cx, 3h
     je tres
+    cmp cx, 4h
+    je cuatro
     cero: 
         print temp0
         jmp fin
@@ -643,22 +689,169 @@ LOCAL cero,uno,dos,tres,cuatro,fin
     fin:
 endm
 
+findChains macro
+    
+endm
+
 ;isCaptured
 
 ;macro para verificar si el movimiento seria suicido
-suicide macro
-
+checkSuicide macro
+    hasLiberty
+    countCX
+    cmp cx, 0
+    je suicide 
 endm
 
 ;Check if one token is captured
-;captureOne macro
-    ;isCorner 
-    ;isSide
-    ;isInside
-;endm
+captureOne macro
+    LOCAL leftSide,colFor,colFor2,colBack,colBack2,rowFor,rowBack,topLeft1,bottomLeft1,rightSide,topRight1,bottomRight1,rowFor2,rowBack2,topSide,topLeft2,topRight2,topAll,bottomSide,bottomLeft2,bottomRight2,bottomAll,center,row2,row7,col2,col7,else,fin
+    cmp coor[1],48       ;Colum0 (Left side)
+    je leftSide
+    cmp coor[1],55       ;Column7 (Right side)
+    je rightSide
+    cmp coor[0],48       ;row0 (Top side)
+    je topSide
+    cmp coor[0],55       ;row7 (Bottom side)
+    je bottomSide
+    jmp center
 
-;ko
-
+    ;----------Checking left side-------------
+    leftSide:            
+        cmp coor[0],53  ;if row <= 5
+        jbe colFor      ;colFor
+        jmp colBack     ;else colBack     
+    colFor:;LEFT
+        mov ax,49
+        push ax
+        call colForward
+        cmp coor[0],48   ;if row == 0 
+        je rowFor        ;rowFor
+        cmp coor[0],49   ;if row == 1
+        je topLeft1
+        jmp colBack      ;else colBack (row >= 2)
+    colBack:
+        mov ax,49
+        call colBackward
+        cmp coor[0],54   ;if row == 6
+        je bottomLeft1       
+        jmp rowFor2       ;else row = 7
+    rowFor:
+        call rowForward
+        jmp fin
+    rowFor2:
+        call rowForward2
+        jmp fin
+    topLeft1: 
+        call cornerTopLeft1
+        jmp colBack
+    bottomLeft1:
+        call cornerBottomLeft1
+        jmp fin
+    ;----------Checking right side-------------
+    rightSide:
+        cmp coor[0],53  ;if row <= 5
+        jbe colFor2     ;colFor2
+        jmp colBack2
+    colFor2:;RIGHT
+        mov ax,48
+        push ax
+        call colForward
+        cmp coor[0],48   ;if row == 0 
+        je rowBack       ;rowBack
+        cmp coor[0],49   ;if row == 1
+        je topRight1
+        jmp colBack2 
+    rowBack:
+        call rowBackward
+        jmp fin
+    rowBack2:
+        call rowBackward2
+        jmp fin
+    colBack2:
+        mov ax,48
+        call colBackward
+        cmp coor[0],54  ;if row == 6
+        je bottomRight1
+        jmp rowBack2    ;else row = 7
+    topRight1:
+        call cornerTopRight1
+        jmp fin
+    bottomRight1:
+        call cornerBottomRight1
+        jmp fin
+    ;-----------Checking top side------------
+    topSide:
+        cmp coor[1],49
+        je topLeft2
+        cmp coor[1],54
+        je topRight2
+        jmp topAll
+        topLeft2:
+            call rowForward
+            call cornerTopLeft2 
+            jmp fin
+        topRight2:
+            call rowBackward
+            call cornerTopRight2
+            jmp fin
+        topAll:
+            call rowForward
+            call rowBackward
+            jmp fin
+    ;----------Checking bottom side----------
+    bottomSide:
+        cmp coor[1],49
+        je bottomLeft2 
+        cmp coor[1],54
+        je bottomRight2
+        jmp bottomAll
+        bottomLeft2:
+            call rowForward2
+            call cornerBottomLeft2
+            jmp fin
+        bottomRight2:
+            call rowBackward2
+            call cornerBottomRight2
+            jmp fin
+        bottomAll:
+            call rowForward2
+            call rowBackward2
+            jmp fin
+    ;---------------Check center-------------
+    center:
+        cmp coor[0],49  ;if row == 2
+        je row2
+        cmp coor[0],54  ;if row == 7
+        je row7
+        cmp coor[1],49  ;if col == 2
+        je col2 
+        cmp coor[1],54  ;if col == 7
+        je col7
+        jmp else
+        row2:
+            call checkRow2
+            call checkRow2A
+            jmp fin
+        row7:
+            call checkRow7
+            call checkRow7A
+            jmp fin
+        col2:
+            call checkCol2
+            call checkCol2A
+            jmp fin
+        col7:
+            call checkCol7
+            call checkCol7A
+            jmp fin
+        else:
+            call checkUp
+            call checkDown
+            call checkLeft
+            call checkRight
+    fin:
+endm
 
 changeTurn macro
 LOCAL player1,player2,fin
