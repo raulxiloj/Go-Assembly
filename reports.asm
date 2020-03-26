@@ -83,6 +83,15 @@ createActualReport macro
     ;--------------
     writeFile handler, divEnd, SIZEOF divEnd
     seekEnd handler
+    ;Time 
+    writeFile handler, h1Time, SIZEOF h1Time
+    seekEnd handler
+    writeFile handler, date, SIZEOF date
+    writeFile handler, time, SIZEOF time
+    seekEnd handler
+    writeFile handler, h1Time2, SIZEOF h1Time2
+    seekEnd handler
+    ;End
     writeFile handler, bodyEnd, SIZEOF bodyEnd
     seekEnd handler
     writeFile handler, htmlEnd, SIZEOF htmlEnd
@@ -471,3 +480,5 @@ LOCAL mientras,black,white,L2,plus
         cmp cx, 3Fh
         jbe mientras
 endm
+
+
