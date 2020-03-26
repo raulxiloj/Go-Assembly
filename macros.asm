@@ -215,6 +215,8 @@ LOCAL movement,specialCommand,pass1,pass2,pass3,saveShow,save2,save3,exit1,exit2
         jmp menuPrincipal
     finishShow:
         ;create html
+        getDate
+        getTime
         createActualReport
         jmp fin
     movement: 
@@ -865,10 +867,4 @@ LOCAL player1,player2,fin
         mov player, 48
         jmp fin
     fin:
-endm
-
-;macro para obtener la fecha
-getTime macro
-    lea bx, time
-    call get_time
 endm

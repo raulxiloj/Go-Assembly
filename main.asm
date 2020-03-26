@@ -1,6 +1,7 @@
 include macros.asm 
 include files.asm
 include reports.asm
+include date.asm
 .model small
 ;-----Stack segment-----
 .stack 100h
@@ -22,14 +23,15 @@ turn2     db "Turno blancas: ",'$'
 inst      db 10 dup('$')
 coor      db 2 dup('$'),'$'
 player    db 48
-time      db "00:00:00",'$'      
+date      db "dd/mm/2020  "
+time      db "00:00:00"     
 ;---------------------File messages and variables---------------------
 file      db 50 dup('$')
 fileData  db 64 dup('$')
 inputFile db 10,13,"Ingrese la ruta del archivo ",10,13,"(Ejemplo: c:\entrada.arq)",10,10,13,'$'
 reading   db "Leyendo el archivo...",10,13,'$'
 handler   dw ?
-saved     db "Juego guardado con exito",10,13,'$'
+saved     db "Juego guardado con exito",10,13
 ;----------------------------HTML tags--------------------------------
 report    db "c:\Actual.html",0
 doctype   db "<!DOCTYPE html>",10
@@ -37,22 +39,17 @@ htmlInit  db "<html lang=en>",10
 headInit  db "<head>",10
 titleTag  db "      <title> Reporte actual </title>",10
 links     db "      <link rel='stylesheet' href='main.css'>",10
-css       db "      <link rel='stylesheet' href='row2.css'>",10,"      <link rel='stylesheet' href='row3.css'>",10,"      <link rel='stylesheet' href='row4.css'>",10
-css2      db "      <link rel='stylesheet' href='row5.css'>",10,"      <link rel='stylesheet' href='row6.css'>",10 
-css3      db "      <link rel='stylesheet' href='row7.css'>",10,"      <link rel='stylesheet' href='row8.css'>",10
 headEnd   db "</head>",10
-bodyInit  db "<body>",10
+bodyInit  db "<body bgcolor='#FAF0E6'>",10
+h1Title   db "<div id='titleReport'><h1>Reporte actual</h1></div>",10
 divTable  db "<div id=tablero>",10
-divr1     db "<div id=row1>",10
-divr2     db "<div id=row2>",10
-divr3     db "<div id=row3>",10
-divr4     db "<div id=row4>",10
-divr5     db "<div id=row5>",10
-divr6     db "<div id=row6>",10
-divr7     db "<div id=row7>",10
-divr8     db "<div id=row8>",10
-divX      db "<div id=rowXXX>",10
-divEnd    db "</div>",10
+divrow    db 9,"<div class=row>",10
+divX      db 9,9,"<div id=colXX></div>",10
+divLets   db "<div id='letters'>",10,9,"<div id='letterA'>A</div>",10,9,"<div id='letterB'>B</div>",10,9,"<div id='letterC'>C</div>",10,9,"<div id='letterD'>D</div>",10,9,"<div id='letterE'>E</div>",10,9,"<div id='letterF'>F</div>",10,9,"<div id='letterG'>G</div>",10,9,"<div id='letterH'>H</div>",10,"</div>",10
+divNum    db 9,9,"<div id=nums>X</div>",10
+divEnd    db 9,"</div>",10
+h1Time    db 9,"<div id=time>",10,9,9,"<h1>"
+h1Time2   db "</h1>",10,9,"</div>",10
 bodyEnd   db "</body>",10
 htmlEnd   db "</html>"
 ;--------------------------Possibles errors:--------------------------
@@ -82,7 +79,6 @@ main proc
         mov ax, @data
         mov ds,ax
         print header
-        getTime
         menuPrincipal:
                 print options
                 getChar
@@ -253,45 +249,12 @@ mov si,0
 ret
 getLength endp
 
-; this procedure will get the current system time 
-; input : BX=offset address of the string TIME
-; output : BX=current time
-get_time proc
-        push ax
-        push cx
-
-        mov ah, 2ch    ;get the current system time
-        int 21h
-
-        mov al, ch
-        call convert
-        mov bx, ax
-        
-        mov al, cl
-        call convert
-        mov [bx+3], ax
-
-        mov al, dh
-        call convert
-        mov [bx+6], ax
-
-        pop cx
-        pop ax
-ret
-get_time endp
-
- ; this procedure will convert the given binary code into ASCII code
- ; input : AL=binary code
+; Procedimiento para convertir de binario -> ascii
+; input : AL=binary code
 ; output : AX=ASCII code
 convert proc
-        push dx
-
-        mov ah, 0
-        mov dl, 10
-        div dl
-        or ax, 3030h
-
-        pop dx
+       aam 
+       add ax, 3030h
 ret
 convert endp
 
