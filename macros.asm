@@ -200,6 +200,9 @@ LOCAL movement,specialCommand,pass1,pass2,pass3,saveShow,save2,save3,exit1,exit2
         jmp invalidCommand
     finishPass:
         ;CHANGE TURN
+        cmp contPass, 2h
+        je gameOver
+        mov contPass, 2h
         changeTurn
         jmp fin
     finishSave:
@@ -380,6 +383,7 @@ LOCAL player1,player2,fin
     player2:
         mov table[bx], 49
     fin:
+        mov contPass, 1h
         changeTurn
 endm
 
@@ -862,26 +866,14 @@ captureOne macro
 endm
 
 changeTurn macro
-LOCAL player1,player2,fin,normal,lastTime
-    cmp contPass, 1h
-    je normal
-    cmp contPass, 2h
-    jmp gameOver
-    normal:
-        mov contPass, 2h
-        cmp player[0],48
-        je player1
-        jmp player2
-        player1:
-            mov player, 49
-            jmp fin
-        player2: 
-            mov player, 48
-            jmp fin
-    lastTime:
-        mov contPass, 2h
-        cmp player[0],48
-        je player1
-        jmp player2
+LOCAL player1,player2,fin
+    cmp player[0],48
+    je player1
+    jmp player2
+    player1:
+        mov player, 49
+        jmp fin
+    player2: 
+        mov player, 48
     fin:
 endm
