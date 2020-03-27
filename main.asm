@@ -35,6 +35,7 @@ handler   dw ?
 saved     db "Juego guardado con exito",10,13,'$'
 ;----------------------------HTML tags--------------------------------
 report    db "c:\Actual.html",0
+reportF   db "c:\FinalR.html",0
 doctype   db "<!DOCTYPE html>",10
 htmlInit  db "<html lang=en>",10
 headInit  db "<head>",10
