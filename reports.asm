@@ -1,5 +1,5 @@
 createActualReport macro 
-    createFile reportF, handler
+    createFile report, handler
     writeFile handler, doctype, SIZEOF doctype
     seekEnd handler
     writeFile handler, htmlInit, SIZEOF htmlInit
@@ -108,7 +108,7 @@ endm
 
 ;Reporte final
 createFinalReport macro 
-    createFile report, handler
+    createFile reportF, handler
     writeFile handler, doctype, SIZEOF doctype
     seekEnd handler
     writeFile handler, htmlInit, SIZEOF htmlInit
