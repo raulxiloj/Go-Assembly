@@ -43,9 +43,11 @@ links     db "      <link rel='stylesheet' href='main.css'>",10
 headEnd   db "</head>",10
 bodyInit  db "<body bgcolor='#FAF0E6'>",10
 h1Title   db "<div id='titleReport'><h1>Reporte actual</h1></div>",10
+h1Title2  db "<div id='titleReport'><h1>Reporte Final</h1></div>",10
 divTable  db "<div id=tablero>",10
 divrow    db 9,"<div class=row>",10
 divX      db 9,9,"<div id=colXX></div>",10
+divSCT    db 9,9,"<div id=XXXX></div>",10
 divLets   db "<div id='letters'>",10,9,"<div id='letterA'>A</div>",10,9,"<div id='letterB'>B</div>",10,9,"<div id='letterC'>C</div>",10,9,"<div id='letterD'>D</div>",10,9,"<div id='letterE'>E</div>",10,9,"<div id='letterF'>F</div>",10,9,"<div id='letterG'>G</div>",10,9,"<div id='letterH'>H</div>",10,"</div>",10
 divNum    db 9,9,"<div id=nums>X</div>",10
 divEnd    db 9,"</div>",10
@@ -174,7 +176,10 @@ main proc
                 je player1
                 jmp player2
         gameOver: 
+                getDate
+                getTime
                 print itsOver
+                createFinalReport
                 jmp menuPrincipal
         finishGame:
                 mov ah, 4ch
