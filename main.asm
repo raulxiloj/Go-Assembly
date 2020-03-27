@@ -26,8 +26,8 @@ player    db 48
 contPass  db 1h
 date      db "dd/mm/2020  "
 time      db "00:00:00"  
-pointsB   db "Fichas negras:  ",10,13,'$'
-pointsW   db "Fichas blancas:  ",10,13,'$' 
+pointsB   db "Fichas negras:    ",10,13,'$'
+pointsW   db "Fichas blancas:   ",10,13,'$' 
 ;---------------------File messages and variables---------------------
 file      db 50 dup('$')
 fileData  db 64 dup('$')
@@ -72,7 +72,7 @@ error9    db 10,13,"Error: numero no valido",10,10,13,'$'
 error10   db 10,10,13,"Error: moviendo el puntero del fichero",10,10,13,'$'
 error11   db 10,13,"Error: Posicion ya ocupada",10,10,13,'$'
 error12   db 10,13,"Error: Movimiento prohibido, seria suicidio",10,10,13,'$'
-itsOver   db 10,13,"Juego finalizado por que ambos jugadores pasaron de turno",10,10,13,'$'
+itsOver   db 10,13,"Juego finalizado por que ambos jugadores pasaron de turno",10,13,'$'
 prueba    db "Esto es una prueba gg",'$'
 temp0     db "Tiene 0 libertades",10,13,'$'
 temp1     db "Tiene 1 libertad",10,13,'$'
@@ -812,39 +812,6 @@ checkCol2 proc
 ret
 checkCol2 endp
 
-checkCol2A proc
-        mov cl, table[bx-7]
-        cmp cl, player[0]
-        je r1
-        jmp fin
-        r1:
-            mov cl, table[bx+9]
-            cmp cl, player[0]
-            je r2
-            jmp fin
-        r2: 
-            mov cl, table[bx+2]
-            cmp cl, player[0]
-            je r3
-            jmp fin
-        r3:
-            mov cl, table[bx+1]
-            cmp cl, player[0]
-            jne captured
-            jmp fin
-        captured:
-            cmp player[0],48
-            je p1
-            jmp p2 
-            p1:
-                mov table[bx+1],50
-                jmp fin
-            p2:
-                mov table[bx+1],51
-        fin:
-ret
-checkCol2A endp
-
 checkCol7 proc
         mov cl, table[bx-7]
         cmp cl,player[0]
@@ -872,39 +839,6 @@ checkCol7 proc
         fin:
 ret
 checkCol7 endp
-
-checkCol7A proc
-        mov cl, table[bx-9]
-        cmp cl, player[0]
-        je r1
-        jmp fin
-        r1:
-            mov cl, table[bx+7]
-            cmp cl, player[0]
-            je r2
-            jmp fin
-        r2: 
-            mov cl, table[bx-2]
-            cmp cl, player[0]
-            je r3
-            jmp fin
-        r3:
-            mov cl, table[bx-1]
-            cmp cl, player[0]
-            jne captured
-            jmp fin
-        captured:
-            cmp player[0],48
-            je p1
-            jmp p2 
-            p1:
-                mov table[bx-1],50
-                jmp fin
-            p2:
-                mov table[bx-1],51
-        fin:
-ret
-checkCol7A endp
 
 ;Center
 checkUp proc

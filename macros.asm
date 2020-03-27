@@ -701,23 +701,17 @@ LOCAL cero,uno,dos,tres,cuatro,fin
     fin:
 endm
 
-findChains macro
-    
-endm
-
-;isCaptured
-
 ;macro para verificar si el movimiento seria suicido
 checkSuicide macro
     hasLiberty
-    countCX
+    ;countCX
     cmp cx, 0
     je suicide 
 endm
 
 ;Check if one token is captured
 captureOne macro
-    LOCAL leftSide,colFor,colFor2,colBack,colBack2,rowFor,rowBack,topLeft1,bottomLeft1,rightSide,topRight1,bottomRight1,rowFor2,rowBack2,topSide,topLeft2,topRight2,topAll,bottomSide,bottomLeft2,bottomRight2,bottomAll,center,row2,row7,col2,col7,else,fin
+    LOCAL leftSide,colFor,colFor2,colBack,colBack2,rowFor,rowBack,topLeft1,bottomLeft1,rightSide,topRight1,bottomRight1,rowFor2,rowBack2,topSide,topLeft2,topRight2,topAll,bottomSide,bottomLeft2,bottomRight2,bottomAll,center,row2,row7,col2,col7,else,fin, col21, col22, col23,finCol,col71,col72,col73,finCol7
     cmp coor[1],48       ;Colum0 (Left side)
     je leftSide
     cmp coor[1],55       ;Column7 (Right side)
@@ -850,13 +844,51 @@ captureOne macro
             call checkRow7A
             jmp fin
         col2:
-            call checkCol2
-            call checkCol2A
-            jmp fin
+            cmp coor[0],48  ;row == 1 
+            je col21
+            cmp coor[0],49  ;row == 2
+            je col21
+            cmp coor[0],54 
+            je col22 
+            cmp coor[0],55
+            je col22
+            jmp col23
+            col21:
+                call checkDown
+                jmp finCol
+            col22:
+                call checkUp
+                jmp finCol
+            col23:
+                call checkUp
+                call checkDown
+            finCol:
+                call checkCol2
+                call checkRight
+                jmp fin
         col7:
-            call checkCol7
-            call checkCol7A
-            jmp fin
+            cmp coor[0],48  ;row == 1 
+            je col71
+            cmp coor[0],49  ;row == 2
+            je col71
+            cmp coor[0],54 
+            je col72 
+            cmp coor[0],55
+            je col72
+            jmp col73
+            col71:
+                call checkDown
+                jmp finCol7
+            col72:
+                call checkUp
+                jmp finCol
+            col73:
+                call checkUp
+                call checkDown
+            finCol7:
+                call checkCol7
+                call checkLeft
+                jmp fin
         else:
             call checkUp
             call checkDown
@@ -879,34 +911,49 @@ LOCAL player1,player2,fin
 endm
 
 countTokens macro
-LOCAL while,black,white,fin
+LOCAL while1,while2,black,white,fin,fin2
     xor si, si  ;Contador general
-    mov bl, 48 ;contador para los tokes negros
-    mov dl, 48 ;contador para los tokens blancos
+    mov al, 00h ;contador para los tokes negros
 
-    while:
+    while1:
         cmp table[si],48    ;black
         je black
-        cmp table[si],49    ;white
-        je white
         cmp table[si],50    ;black
         je black
-        cmp table[si],51    ;white
-        je white
         jmp fin
-        
         black:
-            inc bl
+            inc al
             jmp fin
-        white: 
-            inc dl
         fin: 
         inc si
     cmp si, 40h
-    jne while
+    jne while1
 
-    mov pointsB[15],bl
-    mov pointsW[16],dl
+    call convert
+
+    mov pointsB[15],ah
+    mov pointsB[16],al
+
+    xor si, si 
+    mov al, 00h
+
+    while2:
+        cmp table[si],49    ;white
+        je white
+        cmp table[si],51    ;white
+        je white
+        jmp fin2
+        white:
+            inc al
+        fin2: 
+        inc si
+    cmp si, 40h
+    jne while2
+
+    call convert
+    mov pointsW[15],ah
+    mov pointsW[16],al
+
     print pointsB
     print pointsW 
 endm
