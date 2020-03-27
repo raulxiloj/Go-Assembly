@@ -25,7 +25,9 @@ coor      db 2 dup('$'),'$'
 player    db 48
 contPass  db 1h
 date      db "dd/mm/2020  "
-time      db "00:00:00"     
+time      db "00:00:00"  
+pointsB   db "Fichas negras:  ",10,13,'$'
+pointsW   db "Fichas blancas:  ",10,13,'$' 
 ;---------------------File messages and variables---------------------
 file      db 50 dup('$')
 fileData  db 64 dup('$')
@@ -180,6 +182,8 @@ main proc
                 getDate
                 getTime
                 print itsOver
+                print newLine
+                countTokens
                 createFinalReport
                 jmp menuPrincipal
         finishGame:

@@ -877,3 +877,36 @@ LOCAL player1,player2,fin
         mov player, 48
     fin:
 endm
+
+countTokens macro
+LOCAL while,black,white,fin
+    xor si, si  ;Contador general
+    mov bl, 48 ;contador para los tokes negros
+    mov dl, 48 ;contador para los tokens blancos
+
+    while:
+        cmp table[si],48    ;black
+        je black
+        cmp table[si],49    ;white
+        je white
+        cmp table[si],50    ;black
+        je black
+        cmp table[si],51    ;white
+        je white
+        jmp fin
+        
+        black:
+            inc bl
+            jmp fin
+        white: 
+            inc dl
+        fin: 
+        inc si
+    cmp si, 40h
+    jne while
+
+    mov pointsB[15],bl
+    mov pointsW[16],dl
+    print pointsB
+    print pointsW 
+endm
