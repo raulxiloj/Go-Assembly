@@ -204,12 +204,15 @@ LOCAL movement,specialCommand,pass1,pass2,pass3,saveShow,save2,save3,exit1,exit2
         jmp fin
     finishSave:
         ;SAVE BOARD
+        print inputFile
         getRuta file
         createFile file,handler
         writeFile handler,table,SIZEOF table
         print saved
         closeFile handler
-        jmp fin
+        cmp player[0],48
+        je player1
+        jmp player2
     finishExit:
         cleanBuffer table,SIZEOF table,24h
         jmp menuPrincipal
@@ -218,7 +221,10 @@ LOCAL movement,specialCommand,pass1,pass2,pass3,saveShow,save2,save3,exit1,exit2
         getDate
         getTime
         createActualReport
-        jmp fin
+        print created
+        cmp player[0],48
+        je player1
+        jmp player2
     movement: 
         checkMove inst
         captureOne
@@ -856,15 +862,26 @@ captureOne macro
 endm
 
 changeTurn macro
-LOCAL player1,player2,fin
-    cmp player[0],48
-    je player1
-    jmp player2
-    player1:
-        mov player, 49
-        jmp fin
-    player2: 
-        mov player, 48
-        jmp fin
+LOCAL player1,player2,fin,normal,lastTime
+    cmp contPass, 1h
+    je normal
+    cmp contPass, 2h
+    jmp gameOver
+    normal:
+        mov contPass, 2h
+        cmp player[0],48
+        je player1
+        jmp player2
+        player1:
+            mov player, 49
+            jmp fin
+        player2: 
+            mov player, 48
+            jmp fin
+    lastTime:
+        mov contPass, 2h
+        cmp player[0],48
+        je player1
+        jmp player2
     fin:
 endm

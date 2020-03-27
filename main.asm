@@ -23,15 +23,16 @@ turn2     db "Turno blancas: ",'$'
 inst      db 10 dup('$')
 coor      db 2 dup('$'),'$'
 player    db 48
+contPass  db 1h
 date      db "dd/mm/2020  "
 time      db "00:00:00"     
 ;---------------------File messages and variables---------------------
 file      db 50 dup('$')
 fileData  db 64 dup('$')
 inputFile db 10,13,"Ingrese la ruta del archivo ",10,13,"(Ejemplo: c:\entrada.arq)",10,10,13,'$'
-reading   db "Leyendo el archivo...",10,13,'$'
+reading   db "Leyendo el archivo...",'$'
 handler   dw ?
-saved     db "Juego guardado con exito",10,13
+saved     db "Juego guardado con exito",10,13,'$'
 ;----------------------------HTML tags--------------------------------
 report    db "c:\Actual.html",0
 doctype   db "<!DOCTYPE html>",10
@@ -52,6 +53,7 @@ h1Time    db 9,"<div id=time>",10,9,9,"<h1>"
 h1Time2   db "</h1>",10,9,"</div>",10
 bodyEnd   db "</body>",10
 htmlEnd   db "</html>"
+created   db "Reporte creado con exito",10,13,'$'
 ;--------------------------Possibles errors:--------------------------
 error     db 10,10,13,"Error: caracter invalido",10,10,13,'$'
 error2    db 10,13,"Error: comando no reconocido",10,10,13,'$'
@@ -65,6 +67,7 @@ error9    db 10,13,"Error: numero no valido",10,10,13,'$'
 error10   db 10,10,13,"Error: moviendo el puntero del fichero",10,10,13,'$'
 error11   db 10,13,"Error: Posicion ya ocupada",10,10,13,'$'
 error12   db 10,13,"Error: Movimiento prohibido, seria suicidio",10,10,13,'$'
+itsOver   db 10,13,"Juego finalizado por que ambos jugadores pasaron de turno",10,10,13,'$'
 prueba    db "Esto es una prueba gg",'$'
 temp0     db "Tiene 0 libertades",10,13,'$'
 temp1     db "Tiene 1 libertad",10,13,'$'
@@ -117,15 +120,11 @@ main proc
                 print inputFile
                 getRuta file
                 openFile file,handler
-                readFile handler,fileData,SIZEOF fileData
+                readFile handler,table,SIZEOF table
                 cleanBuffer file,SIZEOF file,24h
-                ;TODO:charge data to the table then clean
                 closeFile handler
                 print reading
-                print fileData
-                print newLine
-                cleanBuffer fileData,SIZEOF fileData,24h
-                jmp menuPrincipal
+                jmp startGame
         invalidChar:
                 print error
                 jmp menuPrincipal
@@ -140,7 +139,9 @@ main proc
                 jmp menuPrincipal
         errorCreating:
                 print error6
-                jmp menuPrincipal
+                cmp player[0],48
+                je player1
+                jmp player2
         errorWriting:
                 print error5
                 jmp menuPrincipal
@@ -172,6 +173,9 @@ main proc
                 cmp player[0],48
                 je player1
                 jmp player2
+        gameOver: 
+                print itsOver
+                jmp menuPrincipal
         finishGame:
                 mov ah, 4ch
                 int 21h
@@ -294,7 +298,14 @@ colForward proc
             jne cap1
             jmp fin
         cap1: 
-            mov table[bx+8],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx+8],50
+                jmp fin
+            p2:
+                mov table[bx+8],51
         fin:
         mov sp, bp ;Desocupamos del stack las variables locales almacenadas en el stack, en este caso no se usaron varialbes locales entonces no hace nada
         pop bp ;Ponemos bp de regreso al valor del bp del proc llamo este proc
@@ -330,7 +341,14 @@ colBackward proc
             cmp cl, player[0]
             jne cap2
         cap2:
-            mov table[bx-8],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx-8],50
+                jmp fin
+            p2:
+                mov table[bx-8],51
         fin:
         mov sp, bp ;Desocupamos del stack las variables locales almacenadas en el stack, en este caso no se usaron varialbes locales entonces no hace nada
         pop bp ;Ponemos bp de regreso al valor del bp del proc llamo este proc
@@ -353,7 +371,14 @@ rowForward proc
             jne captured
             jmp fin
         captured:
-            mov table[bx+1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx+1],50
+                jmp fin
+            p2:
+                mov table[bx+1],51
         fin:
 ret
 rowForward endp
@@ -374,7 +399,14 @@ rowBackward proc
             jne captured
             jmp fin
         captured:
-            mov table[bx-1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx-1],50
+                jmp fin
+            p2:
+                mov table[bx-1],51
         fin:
 ret
 rowBackward endp
@@ -393,7 +425,14 @@ rowForward2 proc
             cmp cl, player[0]
             jne captured
         captured:
-            mov table[bx+1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx+1],50
+                jmp fin
+            p2:
+                mov table[bx+1],51
         fin:
 ret
 rowForward2 endp
@@ -414,7 +453,14 @@ rowBackward2 proc
             jne captured
             jmp fin
         captured:
-            mov table[bx-1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx-1],50
+                jmp fin
+            p2:
+                mov table[bx-1],51
         fin:
 ret
 rowBackward2 endp
@@ -432,7 +478,14 @@ cornerTopLeft1 proc
             jne captured
             jmp fin
         captured:
-            mov table[bx-8],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx-8],50
+                jmp fin
+            p2:
+                mov table[bx-8],51
         fin:
 ret
 cornerTopLeft1 endp
@@ -448,7 +501,14 @@ cornerTopLeft2 proc
             jne captured
             jmp fin
         captured:
-            mov table[bx-1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx-1],50
+                jmp fin
+            p2:
+                mov table[bx-1],51
         fin:
 ret
 cornerTopLeft2 endp
@@ -464,7 +524,14 @@ cornerTopRight1 proc
             jne captured
             jmp fin
         captured:
-            mov table[bx-8],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx-8],50
+                jmp fin
+            p2:
+                mov table[bx-8],51
         fin:
 ret
 cornerTopRight1 endp
@@ -480,7 +547,14 @@ cornerTopRight2 proc
             jne captured
             jmp fin
         captured:
-            mov table[bx+1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx+1],50
+                jmp fin
+            p2:
+                mov table[bx+1],51
         fin:
 ret
 cornerTopRight2 endp
@@ -497,7 +571,14 @@ cornerBottomLeft1 proc
             jne captured
             jmp fin
         captured:
-            mov table[bx+8],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx+8],50
+                jmp fin
+            p2:
+                mov table[bx+8],51
         fin:
 ret
 cornerBottomLeft1 endp
@@ -513,7 +594,14 @@ cornerBottomLeft2 proc
             jne captured
             jmp fin
         captured:
-            mov table[bx-1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx-1],50
+                jmp fin
+            p2:
+                mov table[bx-1],51
         fin:
 ret
 cornerBottomLeft2 endp
@@ -529,7 +617,14 @@ cornerBottomRight1 proc
             jne captured
             jmp fin
         captured:
-            mov table[bx+8],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx+8],50
+                jmp fin
+            p2:
+                mov table[bx+8],51
         fin:
 ret
 cornerBottomRight1 endp
@@ -545,7 +640,14 @@ cornerBottomRight2 proc
             jne captured
             jmp fin
         captured:
-            mov table[bx+1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx+1],50
+                jmp fin
+            p2:
+                mov table[bx+1],51
         fin:
 ret
 cornerBottomRight2 endp
@@ -566,7 +668,14 @@ checkRow2 proc
             jne captured
             jmp fin
         captured:
-            mov table[bx-8],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx-8],50
+                jmp fin
+            p2:
+                mov table[bx-8],51
         fin:
 ret
 checkRow2 endp
@@ -592,7 +701,14 @@ checkRow2A proc
             jne captured
             jmp fin
         captured:
-            mov table[bx+8],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx+8],50
+                jmp fin
+            p2:
+                mov table[bx+8],51
         fin:
 ret
 checkRow2A endp
@@ -613,7 +729,14 @@ checkRow7 proc
             jne captured
             jmp fin
         captured:
-            mov table[bx+8],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx+8],50
+                jmp fin
+            p2:
+                mov table[bx+8],51
         fin:
 ret
 checkRow7 endp
@@ -639,7 +762,14 @@ checkRow7A proc
             jne captured
             jmp fin
         captured:
-            mov table[bx-8],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx-8],50
+                jmp fin
+            p2:
+                mov table[bx-8],51
         fin:
 ret
 checkRow7A endp
@@ -660,7 +790,14 @@ checkCol2 proc
             jne captured
             jmp fin
         captured:
-            mov table[bx-1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx-1],50
+                jmp fin
+            p2:
+                mov table[bx-1],51
         fin:
 ret
 checkCol2 endp
@@ -686,7 +823,14 @@ checkCol2A proc
             jne captured
             jmp fin
         captured:
-            mov table[bx+1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx+1],50
+                jmp fin
+            p2:
+                mov table[bx+1],51
         fin:
 ret
 checkCol2A endp
@@ -707,7 +851,14 @@ checkCol7 proc
             jne captured
             jmp fin
         captured:
-            mov table[bx+1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx+1],50
+                jmp fin
+            p2:
+                mov table[bx+1],51
         fin:
 ret
 checkCol7 endp
@@ -733,7 +884,14 @@ checkCol7A proc
             jne captured
             jmp fin
         captured:
-            mov table[bx-1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx-1],50
+                jmp fin
+            p2:
+                mov table[bx-1],51
         fin:
 ret
 checkCol7A endp
@@ -760,7 +918,14 @@ checkUp proc
             jne captured
             jmp fin
         captured:
-            mov table[bx-8],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx-8],50
+                jmp fin
+            p2:
+                mov table[bx-8],51
         fin:
 ret
 checkUp endp
@@ -786,7 +951,14 @@ checkDown proc
             jne captured
             jmp fin
         captured:
-            mov table[bx+8],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx+8],50
+                jmp fin
+            p2:
+                mov table[bx+8],51
         fin:
 ret
 checkDown endp
@@ -812,7 +984,14 @@ checkLeft proc
             jne captured
             jmp fin
         captured:
-            mov table[bx-1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx-1],50
+                jmp fin
+            p2:
+                mov table[bx-1],51
         fin:
 ret
 checkLeft endp
@@ -838,7 +1017,14 @@ checkRight proc
             jne captured
             jmp fin
         captured:
-            mov table[bx+1],24h
+            cmp player[0],48
+            je p1
+            jmp p2 
+            p1:
+                mov table[bx+1],50
+                jmp fin
+            p2:
+                mov table[bx+1],51
         fin:
 ret
 checkRight endp
