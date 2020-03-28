@@ -52,6 +52,7 @@ LOCAL while, black, white, L2, plus,while2
     
     mov si, 0
     mov bl,48
+    mov al,48
     while: 
         mov bl,48
         xor dx, dx
@@ -60,6 +61,14 @@ LOCAL while, black, white, L2, plus,while2
         writeFile handler, divrow, SIZEOF divrow
         seekEnd handler
         popa
+        add al, 1
+        pusha 
+        mov divNum[15],al
+        writeFile handler, divNum, SIZEOF divNum
+        seekEnd handler
+        popa
+
+        
         while2:
             cmp table[si],48
             je black
@@ -161,12 +170,19 @@ LOCAL while, black, white, L2, plus,while2
     
     mov si, 0
     mov bl,48
+     mov al,48
     while: 
         mov bl,48
         xor dx, dx
         mov dx, 8h
         pusha
         writeFile handler, divrow, SIZEOF divrow
+        seekEnd handler
+        popa
+        add al, 1
+        pusha 
+        mov divNum[15],al
+        writeFile handler, divNum, SIZEOF divNum
         seekEnd handler
         popa
         while2:
